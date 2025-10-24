@@ -174,6 +174,8 @@ def create_prompt(
 8. 文章は自然で読みやすく、ビジネスにふさわしい表現を使用する
 9. 日本語で出力する。（外国語の名詞や専門用語などは構いません）
 10.送信者や宛名の参照できない情報は○○を書く。
+11. 不明確な点は推測せず、一般的な表現を使用する。
+12.現在の日付や季節に応じた表現を使用する。
 
 出力形式:
 {{
@@ -250,7 +252,56 @@ def format_email(
 
 
 # Streamlit UI
-st.set_page_config(page_title="ビジネスメール作成支援", page_icon="📧", layout="wide")
+st.set_page_config(
+    page_title="ビジネスメール作成機", 
+    page_icon="📧", 
+    layout="wide",
+    initial_sidebar_state="collapsed"  # モバイルではサイドバーを初期状態で閉じる
+)
+
+# モバイル対応のCSS
+st.markdown("""
+<style>
+    /* モバイル対応 */
+    @media (max-width: 768px) {
+        .stTextInput, .stTextArea {
+            font-size: 16px !important; /* iOSのズーム防止 */
+        }
+        
+        .main .block-container {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            max-width: 100% !important;
+        }
+        
+        /* サイドバーをモバイルで使いやすく */
+        section[data-testid="stSidebar"] {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
+        /* ボタンを大きく */
+        .stButton button {
+            width: 100% !important;
+            padding: 0.75rem !important;
+            font-size: 1rem !important;
+        }
+    }
+    
+    /* タブレット対応 */
+    @media (max-width: 1024px) {
+        .main .block-container {
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+        }
+    }
+    
+    /* コードブロックのスクロール */
+    .stCodeBlock {
+        overflow-x: auto !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 st.title("📧 ビジネスメール作成機")
 st.caption("AIがあなたの要点から、社内・社外に適したビジネスメールを自動生成します。")
@@ -258,7 +309,15 @@ st.markdown("---")
 
 # サイドバー: 送信者・受信者情報
 with st.sidebar:
-    st.header("👤 送信者情報（あなた）")
+    col_header1, col_button1 = st.columns([3, 1])
+    with col_header1:
+        st.header("👤 送信者情報（あなた）")
+    with col_button1:
+        st.write("")
+        if st.button("🔄", key="reset_sender_btn", help="送信者情報をリセット"):
+            reset_sender()
+            st.rerun()
+    
     sender_company = st.text_input("会社名", key="sender_company", placeholder="例: 株式会社〇〇")
     sender_department = st.text_input("部署名", key="sender_department", placeholder="例: 営業部")
     sender_position = st.text_input("役職", key="sender_position", placeholder="例: 課長")
@@ -276,7 +335,14 @@ with st.sidebar:
     
     st.markdown("---")
     
-    st.header("📬 宛先情報")
+    col_header2, col_button2 = st.columns([3, 1])
+    with col_header2:
+        st.header("📬 宛先情報")
+    with col_button2:
+        st.write("")
+        if st.button("🔄", key="reset_recipient_btn", help="宛先情報をリセット"):
+            reset_recipient()
+            st.rerun()
     
     # 社内外の区分
     is_internal = st.radio(
@@ -301,10 +367,30 @@ with st.sidebar:
         recipient_first_name = st.text_input("名", key="recipient_first_name", placeholder="例: 花子")
     
     st.markdown("---")
-    st.caption("💡 入力しなくてもメールの生成は出来ます")
+    st.caption("💡 未入力の項目は自動的に補完されます")
 
 # メインコンテンツ
-col1, col2 = st.columns(2)
+# モバイル対応：画面幅に応じてレイアウトを変更
+is_mobile = st.session_state.get('is_mobile', False)
+
+# モバイル判定用のJavaScript（簡易版）
+st.markdown("""
+<script>
+    // モバイル判定（画面幅768px以下）
+    if (window.innerWidth <= 768) {
+        window.parent.postMessage({type: 'streamlit:setComponentValue', value: true}, '*');
+    }
+</script>
+""", unsafe_allow_html=True)
+
+# レスポンシブなカラムレイアウト
+if st.session_state.get('mobile_mode', False):
+    # モバイル：1カラム
+    col1 = st.container()
+    col2 = st.container()
+else:
+    # デスクトップ：2カラム
+    col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("📝 メール情報")
@@ -371,8 +457,8 @@ if generate_button:
             else:
                 st.info("🌐 社外メール形式で生成されました")
             
-            # st.text_input("📌 件名", subject, disabled=True)
-            # st.text_area("📄 本文", body, height=450, disabled=True)
+            st.text_input("📌 件名", subject, disabled=True)
+            st.text_area("📄 本文", body, height=450, disabled=True)
             
             # コピーボタン
             st.code(f"件名: {subject}\n\n{body}", language=None)
@@ -380,3 +466,12 @@ if generate_button:
 
 st.markdown("---")
 st.caption("💡 ヒント: 社内/社外の区分と連絡先情報を入力すると、より実用的なメールが生成されます")
+
+# フッター
+st.markdown("---")
+st.markdown("""
+<div style='text-align: center; color: gray; padding: 20px;'>
+    <p>📧 ビジネスメール作成機 v1.0</p>
+    <p style='font-size: 0.8em;'>Powered by Google Gemini AI | Built with Streamlit</p>
+</div>
+""", unsafe_allow_html=True)
