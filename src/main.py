@@ -39,6 +39,24 @@ def rule_based_check(mail_text: str, is_internal: bool) -> List[str]:
     
     return issues
 
+# 🔧 追加：リセット用関数定義
+def reset_sender():
+    for key in [
+        "sender_company", "sender_department", "sender_position",
+        "sender_last_name", "sender_first_name",
+        "sender_email", "sender_phone", "sender_mobile"
+    ]:
+        if key in st.session_state:
+            del st.session_state[key]
+
+def reset_recipient():
+    for key in [
+        "recipient_company", "recipient_department", "recipient_position",
+        "recipient_last_name", "recipient_first_name"
+    ]:
+        if key in st.session_state:
+            del st.session_state[key]
+
 
 def format_sender_signature(sender: Dict[str, str]) -> str:
     """送信者の署名をフォーマット"""
@@ -456,9 +474,6 @@ if generate_button:
                 st.info("🏢 社内メール形式で生成されました")
             else:
                 st.info("🌐 社外メール形式で生成されました")
-            
-            st.text_input("📌 件名", subject, disabled=True)
-            st.text_area("📄 本文", body, height=450, disabled=True)
             
             # コピーボタン
             st.code(f"件名: {subject}\n\n{body}", language=None)
