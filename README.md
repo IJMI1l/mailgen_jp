@@ -9,3 +9,8 @@ AIを使って日本のビジネスメールを自動生成するツールです
 
 ## デプロイ方法
 Streamlit Community Cloudで無料公開可能
+
+##
+streamlit>=1.28.0
+google-generativeai>=0.3.0
+python-dotenv>=1.0.0
