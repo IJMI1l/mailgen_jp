@@ -1,40 +1,11 @@
-# AI Agent Development Project
+# ビジネスメール作成機
 
-このプロジェクトは Python を使用した AI エージェントの開発環境です。
+AIを使って日本のビジネスメールを自動生成するツールです。
 
-## 環境設定
+## 機能
+- 社内/社外メールの自動判別
+- 適切な敬語レベルの調整
+- 署名の自動生成
 
-1. Python 3.10.11
-2. 必要なパッケージ:
-   - numpy
-   - pandas
-   - scikit-learn
-   - torch
-   - transformers
-   - langchain
-   - openai
-   - python-dotenv
-
-## プロジェクト構造
-
-```
-.
-├── src/           # ソースコード
-├── tests/         # テストファイル
-├── .env           # 環境変数
-└── README.md      # このファイル
-```
-
-## 使用方法
-
-1. `.env`ファイルに必要な API キーを設定してください
-2. 必要に応じて Python パッケージをインストール：
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## 開発開始
-
-1. `src`ディレクトリにコードを作成
-2. `tests`ディレクトリにテストを作成
-3. 環境変数は`.env`ファイルで管理
+## デプロイ方法
+Streamlit Community Cloudで無料公開可能
